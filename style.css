@@ -1,0 +1,13 @@
+/* Create error class */
+.error {
+    color: red;
+    font-weight: bold;
+}
+.success {
+    color: green;
+    font-weight: bold;
+}
+.header_link {
+    margin-right: 1em;
+}
+

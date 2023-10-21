@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Insert Product</title>
+    <title>Employee Update Product</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,6 +23,10 @@
         // CHECK THAT ALL FORM VARIABLES ARE SET //////////////////////////////////////////////////////
         $variable_not_set = false;
         $error_string = "";
+        if (!isset($_POST['id'])) {
+            $error_string = $error_string . "<span class='error'>Form submit error: Product ID not received.</span><br>";
+            $variable_not_set = true;
+        }
         if (!isset($_POST['name'])) {
             $error_string = $error_string . "<span class='error'>Form submit error: Product name not received.</span><br>";
             $variable_not_set = true;

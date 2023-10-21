@@ -13,11 +13,11 @@
     <title>Visitor Search Product</title>
 </head>
 <body>
-    <a href="index.php">Project Home Page</a><br><br>
-    <b>Visitor Search Product</b><br><br>
+    <a href="employee_check.php">Employee Home</a><br><br>
+    <b>Employee - Search Product</b><br><br>
     Search for a product using keywords. (Type '*' to see all products.)<br><br>
-    <form action="search_product.php" method="GET">
-        <input type='text' name='search_text'>
+    <form action="employee_display_product.php" method="POST">
+        <input type='text' name='search_text' required>
         <input type='submit' value='Search'>
     </form>
 </body>

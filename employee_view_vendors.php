@@ -6,63 +6,65 @@
     <title>View Vendors</title>
 </head>
 <body>
-</html>
-<?php 
-    define("IN_CODE", 1);
-    include("dbconfig.php");
-    $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<br>Cannot connect to DB.\n");
+    <?php 
+        define("IN_CODE", 1);
+        include("dbconfig.php");
+        $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<br>Cannot connect to DB.\n");
 
-    // check if user is logged in
-    if (!isset($_COOKIE['login'])) {
-        echo "Not logged in.<br>";
-        //die();
-    }
+        // check if user is logged in
+        if (!isset($_COOKIE['login'])) {
+            echo "Not logged in.<br>";
+            die();
+        }
 
-    $query = "SELECT * FROM CPS5740.VENDOR;";
- 
+    ?>
+    <a href="employee_check.php">Employee Home</a><br><br>
+    <b>View Vendors Page</b><br><br>
+    <?php 
 
-    echo "<b>The following vendors are in the database.</b><br><br>";
-    echo "Query: $query<br><br>";
-
-    try {
-        $result = mysqli_query($con, $query);
-    }
-    catch(Exception $e) {
-        echo "ERROR: ". $e->getMessage();
-        die();
-    }
+        $query = "SELECT * FROM CPS5740.VENDOR;";
     
-    if (mysqli_num_rows($result) < 1) {
-        echo "No vendors were found in the database.";
-        die();
-    }
 
-    echo "<table border=1>\n";
-    echo "<tr><th>ID<th>Name<th>Address<th>City<th>State<th>Zipcode<th>Location(Latitude, Longitude)\n";
-    
-    $location_array = array();
-    while($row = mysqli_fetch_array($result)) {
-        $id = $row['vendor_id'];
-        $name = $row['name'];
-        $address = $row['address'];
-        $city = $row['city'];
-        $state = $row['state'];
-        $zipcode = $row['zipcode'];
-        $latitude = $row['latitude'];
-        $longitude = $row['Longitude'];
-        array_push($location_array, array('vendor_id' => $id, 'lat' => $latitude, 'long' => $longitude));
-        echo "<tr><td>$id<td>$name<td>$address<td>$city<td>$state<td>$zipcode<td>$latitude, $longitude\n";
-    }
+        echo "<b>The following vendors are in the database.</b><br>";
 
-    echo "</table>";
+        try {
+            $result = mysqli_query($con, $query);
+        }
+        catch(Exception $e) {
+            echo "ERROR: ". $e->getMessage();
+            die();
+        }
+        
+        if (mysqli_num_rows($result) < 1) {
+            echo "No vendors were found in the database.";
+            die();
+        }
 
-    $location_array = json_encode($location_array);
+        echo "<table border=1>\n";
+        echo "<tr><th>ID<th>Name<th>Address<th>City<th>State<th>Zipcode<th>Location(Latitude, Longitude)\n";
+        
+        $location_array = array();
+        while($row = mysqli_fetch_array($result)) {
+            $id = $row['vendor_id'];
+            $name = $row['name'];
+            $address = $row['address'];
+            $city = $row['city'];
+            $state = $row['state'];
+            $zipcode = $row['zipcode'];
+            $latitude = $row['latitude'];
+            $longitude = $row['Longitude'];
+            array_push($location_array, array('vendor_id' => $id, 'lat' => $latitude, 'long' => $longitude));
+            echo "<tr><td>$id<td>$name<td>$address<td>$city<td>$state<td>$zipcode<td>$latitude, $longitude\n";
+        }
 
-    mysqli_free_result($result);
-    
-?>
-<html>
-<div id="googleMap" style="width:100%;height:400px;"></div>
+        echo "</table>";
+
+        $location_array = json_encode($location_array);
+
+        mysqli_free_result($result);
+        
+    ?>
+<div id="googleMap" style="width:800px;height:400px;"></div>
 
 <script>
     function myMap() {
