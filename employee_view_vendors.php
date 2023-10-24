@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Vendors</title>
+    <title>Employee - View All Vendors</title>
 </head>
 <body>
     <?php 
@@ -19,7 +19,7 @@
 
     ?>
     <a href="employee_check.php">Employee Home</a><br><br>
-    <b>View Vendors Page</b><br><br>
+    <b>Employee - View All Vendors</b><br><br>
     <?php 
 
         $query = "SELECT * FROM CPS5740.VENDOR;";

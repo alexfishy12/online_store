@@ -53,7 +53,7 @@
 
         $query = $query . ";";
 
-        echo "Query: $query<br><br>";
+        //echo "Query: $query<br><br>";
         echo "Keywords: $search_text<br><br>";
 
         try {
@@ -85,8 +85,8 @@
 
         while($row = mysqli_fetch_array($result)) {
             $id = $row['id'];
-            $product_name = $row['name'];
-            $description = $row['description'];
+            $product_name = htmlspecialchars($row['name'], ENT_QUOTES);
+            $description = htmlspecialchars($row['description'], ENT_QUOTES);
             $cost = $row['cost'];
             $sell_price = $row['sell_price'];
             $available_quantity = $row['quantity'];

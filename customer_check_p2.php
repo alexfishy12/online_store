@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee - Home</title>
+    <title>Customer - Home</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,7 +27,7 @@
 
             // check if username exists
             // Prepare statement
-            $stmt = $con->prepare("SELECT login FROM CPS5740.EMPLOYEE2 where login = ?");
+            $stmt = $con->prepare("SELECT login_id FROM 2023F_fisheral.CUSTOMER where login_id = ?");
 
             // bind parameters
             $stmt->bind_param('s', $username);
@@ -40,14 +40,14 @@
 
             // if username doesn't exist, kill program
             if (mysqli_num_rows($result) < 1) {
-                echo "<a href='employee_login.html' class='header_link'>Go Back</a><br><br>";
+                echo "<a href='customer_login.html' class='header_link'>Go Back</a><br><br>";
                 echo "<span class='error'>Username doesn't exist.</span><br>";
                 die();
             }
 
             // check if password is correct
             // Prepare statement
-            $stmt = $con->prepare("SELECT login, password FROM CPS5740.EMPLOYEE2 where login = ? and password = ?");
+            $stmt = $con->prepare("SELECT login_id FROM 2023F_fisheral.CUSTOMER where login_id = ? and password = ?");
 
             // bind parameters
             $stmt->bind_param('ss', $username, $password);
@@ -60,7 +60,7 @@
 
             // if password is incorrect, kill program
             if (mysqli_num_rows($result) < 1) {
-                echo "<a href='employee_login.html' class='header_link'>Go Back</a><br><br>";
+                echo "<a href='customer_login.html' class='header_link'>Go Back</a><br><br>";
                 echo "<span class='error'>Username exists, but password is incorrect.</span><br>";
                 die();
             }
@@ -73,12 +73,12 @@
         }
     ?>
     <a href="logout.php" class='header_link'>Logout</a><br><br>
-    <b>Employee - Home</b><br><br>
+    <b>Customer - Home</b><br><br>
     <?php 
         // LOGIN SUCCESSFUL, GENERATE PAGE CONTENT
 
         // get employee information
-        $stmt = $con->prepare("SELECT name, role FROM CPS5740.EMPLOYEE2 where login = ?");
+        $stmt = $con->prepare("SELECT first_name, last_name, address, city, state, zipcode FROM 2023F_fisheral.CUSTOMER where login_id = ?");
 
         // bind parameters
         $stmt->bind_param('s', $username);
@@ -91,46 +91,36 @@
 
         // get employee name and role
         if (!$result) {
-            echo "<span class='error'>Error getting employee information.</span><br>";
+            echo "<span class='error'>Error getting customer information.</span><br>";
             die();
         }
         $row = mysqli_fetch_array($result);
-        $name = $row['name'];
-        $role = $row['role'];
-        
-        if ($role == "M") {
-            $role = "Manager";
-        }
-        if ($role == "E") {
-            $role = "Employee";
-        }
+        $first_name = $row['first_name'];
+        $last_name = $row['last_name'];
+        $address = $row['address'];
+        $city = $row['city'];
+        $state = $row['state'];
+        $zipcode = $row['zipcode'];
 
-        echo "Welcome, $role: $name<br><br>";
+        $client_ip = $_SERVER['REMOTE_ADDR'];
+        
+
         echo <<<HTML
-        <a href="employee_add_product.php">Add a product</a><br>
-        <a href="employee_view_vendors.php">View all vendors</a><br>
-        <a href="employee_search_product.php">Search and update product</a><br>
+        Welcome, Customer: <b>$first_name $last_name</b><br>
+        $address, $city, $state $zipcode<br>
+        Your IP: $client_ip<br>
+        I don't know if you are from Kean University or not.<br><br>
+        <a href="customer_update_account.php">Update My Account</a><br>
+        <a href="customer_order_history.php">View My Order History</a><br>
+        Search for a product using keywords. (Type '*' to see all products.)<br>
+        <form action="search_product.php" method="GET">
+            <input type='text' name='search_text' required>
+            <input type='submit' value='Search'>
+        </form><br><br>
         HTML;
 
-        if ($role == "Manager") {
-            echo <<<HTML
-            <form action="manager_view_reports.php" method="post" id="view_report"></form>
-            View reports - period 
-                <select id="time_filter" form='view_report'>
-                    <option value="all">All</option>
-                    <option value="past_week">Past week</option>
-                    <option value="current_month">Current Month</option>
-                    <option value="past_month">Past Month</option>
-                </select>, by: 
-                <select id="product_filter" form='view_report'>
-                    <option value="all_sales">all sales</option>
-                    <option value="products">products</option>
-                    <option value="vendors">vendors</option>
-                </select>
-                <button type='submit' form='view_report'>Submit</button>
-            HTML;
-        }
-
+        // check if last keyword matches any advertisement
+        $query = "SELECT * from CPS5740.Advertisement WHERE category like '%'";
     ?>
 </body>
 </html>

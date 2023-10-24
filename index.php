@@ -11,19 +11,19 @@
     Welcome to Alexander Fisher's CPS5740 project!
     <ul>
         <li>
-            <a href="visitor_search_product.php">Visitor search product</a>
+            <a href="visitor_search_product_form.php">Visitor search product</a>
         </li>
         <li>
-            <a href="display_employee.php">View all employees</a>
+            <a href="display_employees.php">View all employees</a>
         </li>
         <li>
             <a href="employee_login.html">Employee login</a>
         </li>
         <li>
-            <a href="">Customer sign up</a>
+            <a href="customer_create_account.php">Customer sign up</a>
         </li>
         <li>
-            <a href="">View all customers</a>
+            <a href="display_customers.php">View all customers</a>
         </li>
         <li>
             <a href="customer_login.html">Customer login</a>

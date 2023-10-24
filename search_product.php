@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Product</title>
+    <title>Customer - Search Product</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <a href="index.php">Project Home Page</a><br><br>
-    <b>Search Product Page</b><br><br>
     <?php 
         define("IN_CODE", 1);
         include("dbconfig.php");
@@ -16,27 +14,31 @@
 
         // check if user cookie is logged in
         if (!isset($_COOKIE['login'])) {
+            echo "<a href='customer_login.html' class='header_link'>Customer Login</a><br><br>";
             echo "<span class='error'>Not logged in.</span><br>";
-            //die();
+            die();
         }
+        
+        echo <<<HTML
+            <a href="customer_check_p2.php" class="header_link">Customer Home</a><br><br>
+            <b>Customer - Search Product</b><br><br>
+        HTML;
 
         if (!isset($_GET['search_text'])) {
-            echo "<span class='error'>No search keywords received.</span><br>";
+            print_error("No search keywords received.");
             die();
         }
 
         $search_text = $_GET['search_text'];
         
         if ($search_text == "") {
-            echo "<span class='error'>Search keyword cannot be blank. Use '*' to see all items.</span><br>";
+            print_error("Search keyword cannot be blank. Use '*' to see all items.");
             die();
         }
 
-        $query = "SELECT p.name, p.description,  p.sell_price, p.quantity, v.name as vendor_name FROM 2023F_fisheral.PRODUCT p left join CPS5740.VENDOR v on (p.vendor_id = v.vendor_id)";
-        if ($search_text == "*") {
-            // show all attributes except cost if user is a customer
-        }
-        else {
+        $query = "SELECT p.id, p.name, p.description,  p.sell_price, p.quantity, v.name as vendor_name FROM 2023F_fisheral.PRODUCT p left join CPS5740.VENDOR v on (p.vendor_id = v.vendor_id)";
+        
+        if ($search_text != "*") {
             // add where clause to query for search keywords
             $search_words = explode(" ", $search_text);
             $num_words = count($search_words);
@@ -58,31 +60,63 @@
             $result = mysqli_query($con, $query);
         }
         catch(Exception $e) {
-            echo "<span class='error'>DATABASE ERROR: ". $e->getMessage() . "</span><br>";
+            print_error("DATABASE ERROR: ". $e->getMessage());
             die();
         }
         
         if (mysqli_num_rows($result) < 1) {
-            echo "<span class='error'>No matching products found.</span><br>";
+            print_error("No matching products found.");
             die();
         }
-            
-        echo "The following products match the search keywords.<br>";
-        echo "<table border=1>\n";
-        echo "<tr><th>Product Name<th>Description<th>Sell Price<th>Available Quantity<th>Vendor Name\n";
+        
+        if ($search_text == "*") {
+            $table_msg = "The following table shows all products in the database.<br>";
+        }
+        else {
+            $table_msg = "The following products match the search keywords.<br>";
+        }
+        echo <<<HTML
+            $table_msg
+            <form action="customer_order.php" method="POST">
+            <table border=1>
+            <tr><th>Product Name<th>Description<th>Sell Price<th>Available Quantity<th>Order Quantity<th>Vendor Name
+        HTML;
+
 
         while($row = mysqli_fetch_array($result)) {
+            $product_id = $row['id'];
             $product_name = $row['name'];
             $description = $row['description'];
             $sell_price = $row['sell_price'];
             $available_quantity = $row['quantity'];
             $vendor_name = $row['vendor_name'];
-            echo "<tr><td>$product_name<td>$description<td>$sell_price<td>$available_quantity<td>$vendor_name\n";
+            echo "<tr><td>$product_name<td>$description<td>$sell_price<td>$available_quantity";
+            echo "<td><input type=number name='order_quantity[]' min=0>";
+            echo "<input type=hidden name='product_id[]' value='$product_id'>";
+            echo "<td>$vendor_name\n";
         }
 
-        echo "</table>";
+        $username = $_COOKIE['login'];
+        $query = "SELECT customer_id FROM 2023F_fisheral.CUSTOMER WHERE login_id = ?;";
+        $stmt = $con->prepare($query);
+        $stmt->bind_param('s', $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = mysqli_fetch_array($result);
+        $customer_id = $row['customer_id'];
+
+        echo <<<HTML
+            </table><br>
+            <input type=submit value='Place Order'>
+            <input type='hidden' name='customer_id' value='$customer_id'>
+            </form>
+        HTML;
 
         mysqli_free_result($result);
+
+        function print_error($msg) {
+            echo "<span class='error'>$msg</span><br>";
+        }
         
     ?>
 
