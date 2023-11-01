@@ -14,20 +14,20 @@
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<span class='error'>Cannot connect to DB.</span><br>\n");
 
         // check if user cookie is logged in
-        if (!isset($_COOKIE['login']) && !isset($_POST['username']) && !isset($_POST['password'])) {
-            echo "<a href='employee_login.html' class='header_link'>Go Back</a><br><br>";
+        if (!isset($_COOKIE['customer_id']) && !isset($_POST['username']) && !isset($_POST['password'])) {
+            echo "<a href='customer_login.html' class='header_link'>Go Back</a><br><br>";
             echo "<span class='error'>Not logged in.</span><br>";
             die();
         }
 
-        if (!isset($_COOKIE['login'])) {
+        if (!isset($_COOKIE['customer_id'])) {
             // get form data
             $username = $_POST['username'];
             $password = $_POST['password'];
 
             // check if username exists
             // Prepare statement
-            $stmt = $con->prepare("SELECT login_id FROM 2023F_fisheral.CUSTOMER where login_id = ?");
+            $stmt = $con->prepare("SELECT customer_id FROM 2023F_fisheral.CUSTOMER where login_id = ?");
 
             // bind parameters
             $stmt->bind_param('s', $username);
@@ -47,7 +47,7 @@
 
             // check if password is correct
             // Prepare statement
-            $stmt = $con->prepare("SELECT login_id FROM 2023F_fisheral.CUSTOMER where login_id = ? and password = ?");
+            $stmt = $con->prepare("SELECT customer_id FROM 2023F_fisheral.CUSTOMER where login_id = ? and password = ?");
 
             // bind parameters
             $stmt->bind_param('ss', $username, $password);
@@ -65,11 +65,12 @@
                 die();
             }
 
+            $customer_id = mysqli_fetch_array($result)['customer_id'];
             // set cookie
-            setcookie("login", $username, time() + 3600);
+            setcookie("customer_id", $customer_id, time() + 3600);
         }
         else {
-            $username = $_COOKIE['login'];
+            $customer_id = $_COOKIE['customer_id'];
         }
     ?>
     <a href="logout.php" class='header_link'>Logout</a><br><br>
@@ -78,10 +79,10 @@
         // LOGIN SUCCESSFUL, GENERATE PAGE CONTENT
 
         // get employee information
-        $stmt = $con->prepare("SELECT first_name, last_name, address, city, state, zipcode FROM 2023F_fisheral.CUSTOMER where login_id = ?");
+        $stmt = $con->prepare("SELECT first_name, last_name, address, city, state, zipcode FROM 2023F_fisheral.CUSTOMER where customer_id = ?");
 
         // bind parameters
-        $stmt->bind_param('s', $username);
+        $stmt->bind_param('i', $customer_id);
 
         // Execute statement
         $stmt->execute();
@@ -108,9 +109,6 @@
         echo <<<HTML
         Welcome, Customer: <b>$first_name $last_name</b><br>
         $address, $city, $state $zipcode<br>
-        Your IP: $client_ip<br>
-        I don't know if you are from Kean University or not.<br><br>
-        <a href="customer_update_account.php">Update My Account</a><br>
         <a href="customer_order_history.php">View My Order History</a><br>
         Search for a product using keywords. (Type '*' to see all products.)<br>
         <form action="search_product.php" method="GET">
@@ -119,8 +117,67 @@
         </form><br><br>
         HTML;
 
-        // check if last keyword matches any advertisement
-        $query = "SELECT * from CPS5740.Advertisement WHERE category like '%'";
+        // get customer's recent search keywords
+        $query = "SELECT keyword FROM 2023F_fisheral.CUSTOMER_RECENT_SEARCH_KEYWORD WHERE customer_id = $customer_id;";
+       
+        try {
+            $result = mysqli_query($con, $query);
+        }
+        catch (Exception $e) {
+            echo "<span class='error'>Error getting recent search keywords.</span><br>";
+            die();
+        }
+
+        // get default advertisement        
+        $ad_query = "SELECT image, description, url FROM CPS5740.Advertisement WHERE category = 'OTHER';";
+        try {
+            $ad_result = mysqli_query($con, $ad_query);
+            $row = mysqli_fetch_array($ad_result);
+            $ad_image = $row['image'];
+            $ad_description = $row['description'];
+            $ad_url = $row['url'];
+        }
+        catch (Exception $e) {
+            echo "<span class='error'>Error getting advertisement.</span><br>";
+            die();
+        }
+        
+        if (mysqli_num_rows($result) > 0) {
+            // recent search keywords
+            while ($row = mysqli_fetch_array($result)) {
+                $keyword = $row['keyword'];
+                
+                // build query for advertisement
+                $ad_query = "SELECT image, description, url FROM CPS5740.Advertisement WHERE category LIKE '%$keyword%' OR description LIKE '%$keyword%';";
+                try {
+                    $ad_result = mysqli_query($con, $ad_query);
+                    if (mysqli_num_rows($ad_result) == 0) {
+                        continue;
+                    }
+                    else {
+                        $row = mysqli_fetch_array($ad_result);
+                        $ad_image = $row['image'];
+                        $ad_description = $row['description'];
+                        $ad_url = $row['url'];
+                        break;
+                    }
+                }
+                catch (Exception $e) {
+                    echo "<span class='error'>Error getting advertisement.</span><br>";
+                    die();
+                }
+            }
+        }
+
+        $image_base64 = base64_encode($ad_image);
+
+        if ($ad_url != "") {
+            echo "<a href='$ad_url' target='_blank'><img src='data:image/jpeg;charset=utf-8;base64,$image_base64' width='200' height='200'></a><br>";
+        }
+        else {
+            echo "<img src='data:image/jpeg;charset=utf-8;base64,$image_base64' width='200' height='200'><br>";
+        }
+        echo $ad_description;
     ?>
 </body>
 </html>

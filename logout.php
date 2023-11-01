@@ -10,7 +10,8 @@
     <a href="index.php">Project Home Page</a><br><br>
     <?php
         // delete login cookie
-        setcookie("login", "", time() - 3600);
+        setcookie("customer_id", "", time() - 3600);
+        setcookie("employee_id", "", time() - 3600);
         
         echo "<span class='success'>Logout successful.</span><br>";
     ?>

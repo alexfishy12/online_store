@@ -14,7 +14,7 @@
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<br>Cannot connect to DB.\n");
 
         // check if user cookie is logged in
-        if (!isset($_COOKIE['login'])) {
+        if (!isset($_COOKIE['customer_id'])) {
             echo "<a href='customer_login.html' class='header_link'>Customer Login</a><br><br>";
             echo "<span class='error'>Not logged in.</span><br>";
             die();
@@ -23,10 +23,6 @@
         // CHECK THAT ALL FORM VARIABLES ARE SET //////////////////////////////////////////////////////
         $variable_not_set = false;
         $error_string = "";
-        if (!isset($_POST['customer_id'])) {
-            $error_string = $error_string . "Form submit error: Customer ID not received.<br>";
-            $variable_not_set = true;
-        }
         if (!isset($_POST['product_id'])) {
             $error_string = $error_string . "Form submit error: Product ID not received.<br>";
             $variable_not_set = true;
@@ -50,9 +46,6 @@
         $num_ordered_products = 0;
         $products_ordered = array();
         $order_errors = array();
-
-        // get customer_id of user who is logged in and placing an order
-        $customer_id = $_POST['customer_id'];
 
         // get product_id from form
         $id = $_POST['product_id'];
@@ -174,7 +167,7 @@
         echo "<span class='success'>Order placed successfully.</span><br><br>";
         echo "<b>Order Information:</b><br>";
 
-        $query = "SELECT "
+        $query = "SELECT ";
 
         $query = "SELECT p.name, p.sell_price, po.quantity, (p.sell_price * po.quantity) as subtotal FROM 2023F_fisheral.PRODUCT_ORDER po left join 2023F_fisheral.PRODUCT p on (po.product_id = p.id) WHERE po.order_id = $order_id;";
         $result = mysqli_query($con, $query);
@@ -196,7 +189,7 @@
 
             $total = $total + $subtotal;
         }
-        echo "<tr><td colspan=3><b>Total<td><b>$total";
+        echo "<tr><td colspan=3><b>Total</b><td><b>$total</b>";
         echo "</table>";
 
 
