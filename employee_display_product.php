@@ -7,18 +7,24 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <a href="employee_search_product.php" class="header_link">Go Back</a><a href="employee_check.php" class='header_link'>Employee Home</a><br><br>
-    <b>Search Product Page</b><br><br>
     <?php 
         define("IN_CODE", 1);
         include("dbconfig.php");
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<span class='error'>Cannot connect to DB.</span>\n");
-
+        
         // check if user cookie is logged in
-        if (!isset($_COOKIE['login'])) {
+        if (!isset($_COOKIE['employee_id'])) {
+            echo "<a href='employee_login.html' class='header_link'>Employee Login</a><br><br>";
             print_error("Not logged in.");
             die();
         }
+
+        echo <<<HTML
+            <a href="employee_search_product.php" class="header_link">Go Back</a><a href="employee_check.php" class='header_link'>Employee Home</a><br><br>
+            <b>Search Product Page</b><br><br>
+        HTML;
+        
+        $employee_id = $_COOKIE['employee_id'];
 
         if (!isset($_POST['search_text'])) {
             print_error("No search keywords received.");
@@ -119,19 +125,9 @@
             mysqli_data_seek($vendors_result, 0);
         }
 
-        $username = $_COOKIE['login'];
-        $query = "SELECT employee_id FROM CPS5740.EMPLOYEE2 WHERE login = ?;";
-        $stmt = $con->prepare($query);
-        $stmt->bind_param('s', $username);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = mysqli_fetch_array($result);
-        $employee_id = $row['employee_id'];
-
         echo <<<HTML
             </table><br>
             <input type=submit value='Update Product(s)'>
-            <input type='hidden' name='employee_id' value='$employee_id'>
             </form>
         HTML;
 

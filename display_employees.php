@@ -16,7 +16,7 @@
 
         $query = "SELECT employee_id, login, password, name, role FROM CPS5740.EMPLOYEE2;";
 
-        echo "Query: $query<br><br>";
+        //echo "Query: $query<br><br>";
 
         try {
             $result = mysqli_query($con, $query);

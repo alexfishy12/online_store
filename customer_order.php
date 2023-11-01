@@ -20,6 +20,7 @@
             die();
         }
 
+        $customer_id = $_COOKIE['customer_id'];
         // CHECK THAT ALL FORM VARIABLES ARE SET //////////////////////////////////////////////////////
         $variable_not_set = false;
         $error_string = "";

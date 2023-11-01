@@ -14,11 +14,12 @@
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<span class='error'>Cannot connect to DB.</span>\n");
 
         // check if user cookie is logged in
-        if (!isset($_COOKIE['login'])) {
-            echo "<a href='employee_login.html' class='header_link'>Go Back</a><br><br>";
+        if (!isset($_COOKIE['employee_id'])) {
+            echo "<a href='employee_login.html' class='header_link'>Employee Login</a><br><br>";
             echo "<span class='error'>Not logged in.</span><br>";
             die();
         }
+        $employee_id = $_COOKIE['employee_id'];
     ?>
     <a href="employee_check.php" class="header_link">Go Back</a><br><br>
     <b>Employee - Add Product</b><br><br>
@@ -41,18 +42,6 @@
                 }
             ?>
         </select>
-        <?php 
-            // get employee_id
-            $username = $_COOKIE['login'];
-            $query = "SELECT employee_id FROM CPS5740.EMPLOYEE2 WHERE login = ?;";
-            $stmt = $con->prepare($query);
-            $stmt->bind_param('s', $username);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $row = mysqli_fetch_array($result);
-            $employee_id = $row['employee_id'];
-            echo "<input type='hidden' name='employee_id' value='$employee_id'>";
-        ?>
         <input type="submit" value="Submit">
     </form>
 </body>

@@ -14,13 +14,13 @@
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<span class='error'>Cannot connect to DB.</span><br>\n");
 
         // check if user cookie is logged in
-        if (!isset($_COOKIE['login']) && !isset($_POST['username']) && !isset($_POST['password'])) {
-            echo "<a href='employee_login.html' class='header_link'>Go Back</a><br><br>";
+        if (!isset($_COOKIE['employee_id']) && !isset($_POST['username']) && !isset($_POST['password'])) {
+            echo "<a href='employee_login.html' class='header_link'>Employee Login</a><br><br>";
             echo "<span class='error'>Not logged in.</span><br>";
             die();
         }
 
-        if (!isset($_COOKIE['login'])) {
+        if (!isset($_COOKIE['employee_id'])) {
             // get form data
             $username = $_POST['username'];
             $password = $_POST['password'];
@@ -47,7 +47,7 @@
 
             // check if password is correct
             // Prepare statement
-            $stmt = $con->prepare("SELECT login, password FROM CPS5740.EMPLOYEE2 where login = ? and password = ?");
+            $stmt = $con->prepare("SELECT employee_id FROM CPS5740.EMPLOYEE2 where login = ? and password = SHA2(?, 256)");
 
             // bind parameters
             $stmt->bind_param('ss', $username, $password);
@@ -66,10 +66,11 @@
             }
 
             // set cookie
-            setcookie("login", $username, time() + 3600);
+            $employee_id = mysqli_fetch_array($result)['employee_id'];
+            setcookie("employee_id", $employee_id, time() + 3600);
         }
         else {
-            $username = $_COOKIE['login'];
+            $employee_id = $_COOKIE['employee_id'];
         }
     ?>
     <a href="logout.php" class='header_link'>Logout</a><br><br>
@@ -78,10 +79,10 @@
         // LOGIN SUCCESSFUL, GENERATE PAGE CONTENT
 
         // get employee information
-        $stmt = $con->prepare("SELECT name, role FROM CPS5740.EMPLOYEE2 where login = ?");
+        $stmt = $con->prepare("SELECT name, role FROM CPS5740.EMPLOYEE2 where employee_id = ?");
 
         // bind parameters
-        $stmt->bind_param('s', $username);
+        $stmt->bind_param('i', $employee_id);
 
         // Execute statement
         $stmt->execute();
@@ -116,14 +117,14 @@
             echo <<<HTML
             <form action="manager_view_reports.php" method="post" id="view_report"></form>
             View reports - period 
-                <select id="time_filter" form='view_report'>
-                    <option value="all">All</option>
+                <select name="report_period" form='view_report'>
+                    <option value="all_time" selected>All time</option>
                     <option value="past_week">Past week</option>
                     <option value="current_month">Current Month</option>
                     <option value="past_month">Past Month</option>
                 </select>, by: 
-                <select id="product_filter" form='view_report'>
-                    <option value="all_sales">all sales</option>
+                <select name="report_type" form='view_report'>
+                    <option value="all_sales" selected>all sales</option>
                     <option value="products">products</option>
                     <option value="vendors">vendors</option>
                 </select>

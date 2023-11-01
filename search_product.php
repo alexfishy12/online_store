@@ -18,6 +18,7 @@
             echo "<span class='error'>Not logged in.</span><br>";
             die();
         }
+        $customer_id = $_COOKIE['customer_id'];
         
         echo <<<HTML
             <a href="customer_check_p2.php" class="header_link">Customer Home</a><br><br>

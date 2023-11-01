@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee - View All Vendors</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <?php 
@@ -11,11 +12,13 @@
         include("dbconfig.php");
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<br>Cannot connect to DB.\n");
 
-        // check if user is logged in
-        if (!isset($_COOKIE['login'])) {
-            echo "Not logged in.<br>";
+        // check if user cookie is logged in
+        if (!isset($_COOKIE['employee_id'])) {
+            echo "<a href='employee_login.html' class='header_link'>Employee Login</a><br><br>";
+            echo "<span class='error'>Not logged in.</span><br>";
             die();
         }
+        $employee_id = $_COOKIE['employee_id'];
 
     ?>
     <a href="employee_check.php">Employee Home</a><br><br>

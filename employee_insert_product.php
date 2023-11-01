@@ -14,11 +14,12 @@
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<br>Cannot connect to DB.\n");
 
         // check if user cookie is logged in
-        if (!isset($_COOKIE['login'])) {
+        if (!isset($_COOKIE['employee_id'])) {
             echo "<a href='employee_login.html' class='header_link'>Employee Login</a><br><br>";
             echo "<span class='error'>Not logged in.</span><br>";
             die();
         }
+        $employee_id = $_COOKIE['employee_id'];
 
         // CHECK THAT ALL FORM VARIABLES ARE SET //////////////////////////////////////////////////////
         $variable_not_set = false;
@@ -47,10 +48,6 @@
             $error_string = $error_string . "<span class='error'>Form submit error: Product not received.</span><br>";
             $variable_not_set = true;
         }
-        if (!isset($_POST['employee_id'])) {
-            $error_string = $error_string . "<span class='error'>Form submit error: Employee ID not received.</span><br>";
-            $variable_not_set = true;
-        }
 
         // if any of the variables weren't set, kill program
         if ($variable_not_set) {
@@ -65,7 +62,6 @@
         $sell_price = $_POST['sell_price'];
         $quantity = $_POST['quantity'];
         $vendor_id = $_POST['vendor_id'];
-        $employee_id = $_POST['employee_id'];
         
         // check that all variables are valid
         $variable_not_valid = false;

@@ -14,11 +14,12 @@
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<br>Cannot connect to DB.\n");
 
         // check if user cookie is logged in
-        if (!isset($_COOKIE['login'])) {
+        if (!isset($_COOKIE['employee_id'])) {
             echo "<a href='employee_login.html' class='header_link'>Employee Login</a><br><br>";
             echo "<span class='error'>Not logged in.</span><br>";
             die();
         }
+        $employee_id = $_COOKIE['employee_id'];
 
         // CHECK THAT ALL FORM VARIABLES ARE SET //////////////////////////////////////////////////////
         $variable_not_set = false;
@@ -51,10 +52,6 @@
             $error_string = $error_string . "<span class='error'>Form submit error: Product not received.</span><br>";
             $variable_not_set = true;
         }
-        if (!isset($_POST['employee_id'])) {
-            $error_string = $error_string . "<span class='error'>Form submit error: Employee ID not received.</span><br>";
-            $variable_not_set = true;
-        }
 
         // if any of the variables weren't set, kill program
         if ($variable_not_set) {
@@ -72,9 +69,6 @@
         // get id from form
         $id = $_POST['id'];
         $num_products_to_update = count($id);
-
-        // get employee id of user who is logged in and updating the products
-        $employee_id = $_POST['employee_id'];
         
         // try update for each item separately
         for ($i = 0; $i < $num_products_to_update; $i++) {
@@ -139,10 +133,6 @@
                 array_push($error_array, "Product vendor cannot be blank.");
                 $variable_not_valid = true;
             }
-            if (strlen(strval($employee_id)) == 0) {
-                array_push($error_array, "Employee ID cannot be blank.");
-                $variable_not_valid = true;
-            }
             if ($variable_not_valid) {
                 print_update_failed_error($id, $error_array);
                 continue;
@@ -170,7 +160,7 @@
                 continue;
             }
         
-            // INSERT PRODUCT INTO DATABASE //////////////////////////////////////////////////////
+            // UPDATE PRODUCT IN THE DATABASE //////////////////////////////////////////////////////
     
             $query = "UPDATE 2023F_fisheral.PRODUCT SET name = ?, description = ?, cost = ?, sell_price = ?, quantity = ?, vendor_id = ?, employee_id = ? WHERE id = ?;";
             $stmt = $con->prepare($query);
@@ -191,7 +181,7 @@
                 continue;
             }
             
-            echo "<span class='success'>Updated product $id successfully.</span><br>";
+            echo "<span class='success'>Updated product #$id successfully.</span><br>";
             $num_updated_products++;
             
             $stmt->close();

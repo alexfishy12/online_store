@@ -14,7 +14,7 @@
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<span class='error'>Cannot connect to DB.</span><br>\n");
 
         // check if user cookie is logged in
-        if (!isset($_COOKIE['customer_id']) && !isset($_POST['username']) && !isset($_POST['password'])) {
+        if (!isset($_COOKIE['customer_id']) && (!isset($_POST['username']) && !isset($_POST['password']))) {
             echo "<a href='customer_login.html' class='header_link'>Go Back</a><br><br>";
             echo "<span class='error'>Not logged in.</span><br>";
             die();
