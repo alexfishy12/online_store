@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <a href="index.php">Project Home Page</a><br><br>
+    <a href="index.html">Project Home Page</a><br><br>
     <b>Display Employees</b><br><br>
     <?php 
         define("IN_CODE", 1);

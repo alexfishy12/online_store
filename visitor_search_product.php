@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <a href="visitor_search_product_form.php" class="header_link">Go Back</a><a href="index.php" class="header_link">Project Home Page</a><br><br>
+    <a href="visitor_search_product_form.php" class="header_link">Go Back</a><a href="index.html" class="header_link">Project Home Page</a><br><br>
     <b>Search Product Page</b><br><br>
     <?php 
         define("IN_CODE", 1);

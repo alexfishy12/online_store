@@ -13,7 +13,7 @@
         include("dbconfig.php");
         $con = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname) or die ("<span class='error'>Cannot connect to DB.</span>\n");
     ?>
-    <a href="index.php" class="header_link">Project Home Page</a><br><br>
+    <a href="index.html" class="header_link">Project Home Page</a><br><br>
     <b>Customer - Create Account</b><br><br>
 
     <!-- 

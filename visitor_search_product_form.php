@@ -13,7 +13,7 @@
     <title>Visitor Search Product</title>
 </head>
 <body>
-    <a href="index.php">Project Home Page</a><br><br>
+    <a href="index.html">Project Home Page</a><br><br>
     <b>Visitor Search Product</b><br><br>
     Search for a product using keywords. (Type '*' to see all products.)<br><br>
     <form action="visitor_search_product.php" method="GET">
