@@ -116,6 +116,17 @@
                 $id = $products_ordered[$i]['id'];
                 $order_quantity = $products_ordered[$i]['order_quantity'];
 
+                // SELECT RECORD FOR UPDATE (CONCURRENCY CONTROL)
+                $select_query = "SELECT * FROM 2023F_fisheral.PRODUCT WHERE id = ? FOR UPDATE;";
+                $stmt = $con->prepare($select_query);
+                $stmt->bind_param('i', $id);
+                if (!$stmt->execute()) {
+                    print_order_failed_error($id, array("CONCURRENCY ERROR: Unable to select product $id for update."));
+                    $con->rollback();
+                    die();
+                }
+                $stmt->close();
+
                 // UPDATE ITEM QUANTITY IN DATABASE
                 $query = "UPDATE 2023F_fisheral.PRODUCT SET quantity = (quantity - ?) WHERE id = ?;";
                 $stmt = $con->prepare($query);
