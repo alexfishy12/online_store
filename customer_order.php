@@ -104,71 +104,87 @@
         }
 
         // ORDER IS POSSIBLE, UPDATE DATABASE //////////////////////////////////////////////////////
-    
-        // 1) Deduct quantity from PRODUCT table
+        
+        // BEGIN TRANSACTION FOR CONCURRENCY CONTROL
+        try {
+            $con->begin_transaction();
 
-        for ($i = 0; $i < count($products_ordered); $i++) {
-            // get variables from form
-            $id = $products_ordered[$i]['id'];
-            $order_quantity = $products_ordered[$i]['order_quantity'];
+            // 1) Deduct quantity from PRODUCT table
 
-            // UPDATE ITEM QUANTITY IN DATABASE
-            $query = "UPDATE 2023F_fisheral.PRODUCT SET quantity = (quantity - ?) WHERE id = ?;";
+            for ($i = 0; $i < count($products_ordered); $i++) {
+                // get variables from form
+                $id = $products_ordered[$i]['id'];
+                $order_quantity = $products_ordered[$i]['order_quantity'];
+
+                // UPDATE ITEM QUANTITY IN DATABASE
+                $query = "UPDATE 2023F_fisheral.PRODUCT SET quantity = (quantity - ?) WHERE id = ?;";
+                $stmt = $con->prepare($query);
+                $stmt->bind_param('ii', $order_quantity, $id);
+                $stmt->execute();
+                if ($stmt->affected_rows == 0) {
+                    print_order_failed_error($id, array("0 affected rows during PRODUCT table quantity update."));
+                    $con->rollback();
+                    die();
+                }
+            }
+
+            // 2) Insert order information into ORDER table
+
+            $query = "INSERT INTO 2023F_fisheral.ORDER (customer_id, date) VALUES (?, NOW());";
             $stmt = $con->prepare($query);
-            $stmt->bind_param('ii', $order_quantity, $id);
+            $stmt->bind_param('i', $customer_id);
             $stmt->execute();
             if ($stmt->affected_rows == 0) {
-                print_order_failed_error($id, array("0 affected rows during PRODUCT table quantity update."));
+                echo "<span class='error'>0 affected rows during ORDER table insert.</span><br>";
+                $con->rollback();
+                die();
+            }
+
+            // 3) Get order_id from ORDER table, (last_submit_id), then insert each product from order into PRODUCT_ORDER table
+            
+            $order_id = $con->insert_id;
+            
+            // begin query with first product
+            $id = $products_ordered[0]['id'];
+            $order_quantity = $products_ordered[0]['order_quantity'];
+
+            $query = "INSERT INTO 2023F_fisheral.PRODUCT_ORDER (order_id, product_id, quantity) VALUES ($order_id, $id, $order_quantity)";
+            for ($i = 1; $i < count($products_ordered); $i++) {
+                // get variables from form
+                $id = $products_ordered[$i]['id'];
+                $order_quantity = $products_ordered[$i]['order_quantity'];
+
+                // INSERT EACH PRODUCT INTO PRODUCT_ORDER TABLE
+                $query = $query. ", ($order_id, $id, $order_quantity)";
+            }
+            $query = $query . ";";
+            $result = mysqli_query($con, $query);
+
+            if(!$result) {
+                print_error("Query failed: " . mysqli_error($con));
+                $con->rollback();
+                die();
+            }
+
+            if (mysqli_affected_rows($con) == 0) {
+                print_order_failed_error($id, array("0 affected rows during PRODUCT_ORDER table insert."));
+                $con->rollback();
                 die();
             }
         }
-
-        // 2) Insert order information into ORDER table
-
-        $query = "INSERT INTO 2023F_fisheral.ORDER (customer_id, date) VALUES (?, NOW());";
-        $stmt = $con->prepare($query);
-        $stmt->bind_param('i', $customer_id);
-        $stmt->execute();
-        if ($stmt->affected_rows == 0) {
-            echo "<span class='error'>0 affected rows during ORDER table insert.</span><br>";
+        catch (Exception $e) {
+            // If there's an error, roll back the transaction
+            $con->rollback();
+            // Handle the error, e.g., by showing a message to the user
+            print_error("Transaction failed: ". $e->getMessage());
             die();
         }
-
-        // 3) Get order_id from ORDER table, (last_submit_id), then insert each product from order into PRODUCT_ORDER table
-        
-        $order_id = $con->insert_id;
-        
-        // begin query with first product
-        $id = $products_ordered[0]['id'];
-        $order_quantity = $products_ordered[0]['order_quantity'];
-
-        $query = "INSERT INTO 2023F_fisheral.PRODUCT_ORDER (order_id, product_id, quantity) VALUES ($order_id, $id, $order_quantity)";
-        for ($i = 1; $i < count($products_ordered); $i++) {
-            // get variables from form
-            $id = $products_ordered[$i]['id'];
-            $order_quantity = $products_ordered[$i]['order_quantity'];
-
-            // INSERT EACH PRODUCT INTO PRODUCT_ORDER TABLE
-            $query = $query. ", ($order_id, $id, $order_quantity)";
-        }
-        $query = $query . ";";
-        $result = mysqli_query($con, $query);
-
-        if(!$result) {
-            print_error("Query failed: " . mysqli_error($con));
-            die();
-        }
-
-        if (mysqli_affected_rows($con) == 0) {
-            print_order_failed_error($id, array("0 affected rows during PRODUCT_ORDER table insert."));
-            die();
-        }
+        // If no error, commit the transaction
+        $con->commit();
 
         // ORDER COMPLETE, PRINT OUT ORDER INFORMATION //////////////////////////////////////////////////////
         echo "<span class='success'>Order placed successfully.</span><br><br>";
         echo "<b>Order Information:</b><br>";
-
-        $query = "SELECT ";
 
         $query = "SELECT p.name, p.sell_price, po.quantity, (p.sell_price * po.quantity) as subtotal FROM 2023F_fisheral.PRODUCT_ORDER po left join 2023F_fisheral.PRODUCT p on (po.product_id = p.id) WHERE po.order_id = $order_id;";
         $result = mysqli_query($con, $query);
@@ -192,7 +208,6 @@
         }
         echo "<tr><td colspan=3><b>Total</b><td><b>$total</b>";
         echo "</table>";
-
 
         die();
 
